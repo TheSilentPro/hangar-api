@@ -1,5 +1,3 @@
-# HangarClient Wiki
-
 ## Overview
 
 `HangarClient` is a Java API client designed for interacting with the [Hangar](https://hangar.papermc.io/api-docs) platform. 
