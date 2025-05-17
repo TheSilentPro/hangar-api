@@ -4,7 +4,6 @@ import com.github.thesilentpro.hangarapi.client.Requester;
 import com.github.thesilentpro.hangarapi.gson.GsonUtils;
 import com.github.thesilentpro.hangarapi.model.implementation.project.*;
 import com.github.thesilentpro.hangarapi.request.ProjectsRequestBuilder;
-import com.github.thesilentpro.hangarapi.request.RequestBuilder;
 import com.github.thesilentpro.hangarapi.response.implementation.project.ProjectsResponseImpl;
 import com.github.thesilentpro.hangarapi.response.project.ProjectsResponse;
 import com.google.gson.JsonArray;
@@ -98,37 +97,26 @@ public class ProjectsRequestBuilderImpl extends AbstractPaginatedRequestBuilder<
 
     @Override
     public CompletableFuture<ProjectsResponse> execute() {
-        String baseEndpoint = "projects";
-        StringBuilder queryBuilder = new StringBuilder();
-
-        boolean first = true;
         if (query != null && !query.isBlank()) {
-            appendParam(queryBuilder, "query", query, first);
-            first = false;
+            withParam("query", query);
         }
         if (sortType != null) {
-            appendParam(queryBuilder, "sort", sortType.value(), first);
-            first = false;
+            withParam("sort", sortType.value());
         }
         if (category != null) {
-            appendParam(queryBuilder, "category", category.value(), first);
-            first = false;
+            withParam("category", category.value());
         }
         if (platform != null) {
-            appendParam(queryBuilder, "platform", platform.name(), first);
-            first = false;
+            withParam("platform", platform.name());
         }
         if (owner != null && !owner.isBlank()) {
-            appendParam(queryBuilder, "owner", owner, first);
-            first = false;
+            withParam("owner", owner);
         }
         if (licenseType != null) {
-            appendParam(queryBuilder, "license", licenseType.value(), first);
-            first = false;
+            withParam("license", licenseType.value());
         }
         if (version != null && !version.isBlank()) {
-            appendParam(queryBuilder, "version", version, first);
-            first = false;
+            withParam("version", version);
         }
         if (tags != null && !tags.isEmpty()) {
             StringBuilder tagBuilder = new StringBuilder();
@@ -138,17 +126,22 @@ public class ProjectsRequestBuilderImpl extends AbstractPaginatedRequestBuilder<
                 }
                 tagBuilder.append(tag.value());
             }
-            appendParam(queryBuilder, "tags", tagBuilder.toString(), first);
-            first = false;
+            withParam("tags", tagBuilder.toString());
+            
         }
         if (member != null && !member.isBlank()) {
-            appendParam(queryBuilder, "member", member, first);
+            withParam("member", member);
         }
 
-        String endpoint = baseEndpoint + (!queryBuilder.isEmpty() ? queryBuilder.toString() : "");
+        if (getLimit() != -1) {
+            withParam("limit", String.valueOf(getLimit()));
+        }
+        if (getOffset() != -1) {
+            withParam("offset", String.valueOf(getOffset()));
+        }
 
         return getRequester().sendRequest(
-                getRequester().newRequest(endpoint, false).build(),
+                getRequester().newRequest("projects" + buildParams(null), false).build(),
                 response -> {
                     JsonObject main = JsonParser.parseString(response.body()).getAsJsonObject();
                     JsonObject pagination = main.getAsJsonObject("pagination");
@@ -162,13 +155,6 @@ public class ProjectsRequestBuilderImpl extends AbstractPaginatedRequestBuilder<
                     );
                 }
         );
-    }
-
-    private void appendParam(StringBuilder builder, String key, String value, boolean first) {
-        builder.append(first ? '?' : '&')
-                .append(key)
-                .append('=')
-                .append(RequestBuilder.encode(value));
     }
 
 }

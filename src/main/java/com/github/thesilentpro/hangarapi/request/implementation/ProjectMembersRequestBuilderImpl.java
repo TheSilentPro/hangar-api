@@ -29,7 +29,14 @@ public class ProjectMembersRequestBuilderImpl extends AbstractPaginatedRequestBu
 
     @Override
     public CompletableFuture<ProjectMembersResponse> execute() {
-        return getRequester().sendRequest(getRequester().newRequest("projects/" + RequestBuilder.encode(project) + "/members", false).build(), response -> {
+        if (getLimit() != -1) {
+            withParam("limit", String.valueOf(getLimit()));
+        }
+        if (getOffset() != -1) {
+            withParam("offset", String.valueOf(getOffset()));
+        }
+
+        return getRequester().sendRequest(getRequester().newRequest("projects/" + RequestBuilder.encode(project) + "/members" + buildParams(null), false).build(), response -> {
             JsonObject main = JsonParser.parseString(response.body()).getAsJsonObject();
             JsonObject pagination = main.get("pagination").getAsJsonObject();
             JsonArray array = main.get("result").getAsJsonArray();

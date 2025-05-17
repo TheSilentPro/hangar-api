@@ -31,10 +31,19 @@ public class UserProjectsRequestBuilderImpl extends AbstractPaginatedRequestBuil
 
     @Override
     public CompletableFuture<UserProjectsResponse> execute() {
+        if (getLimit() != -1) {
+            withParam("limit", String.valueOf(getLimit()));
+        }
+        if (getOffset() != -1) {
+            withParam("offset", String.valueOf(getOffset()));
+        }
+
+        String endpoint = buildParams(path);
+
         if (this.user == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("User must not be null!"));
         }
-        return getRequester().sendRequest(getRequester().newRequest("users/" + RequestBuilder.encode(this.user) + path, false).build(), response -> {
+        return getRequester().sendRequest(getRequester().newRequest("users/" + RequestBuilder.encode(this.user) + endpoint, false).build(), response -> {
             JsonObject main = JsonParser.parseString(response.body()).getAsJsonObject();
             JsonObject pagination = main.getAsJsonObject("pagination");
             JsonArray array = main.getAsJsonArray("result");
